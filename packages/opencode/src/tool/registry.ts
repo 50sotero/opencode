@@ -103,6 +103,7 @@ export namespace ToolRegistry {
       const webfetch = yield* WebFetchTool
       const websearch = yield* WebSearchTool
       const codesearch = yield* CodeSearchTool
+      const edit = yield* EditTool
 
       const state = yield* InstanceState.make<State>(
         Effect.fn("ToolRegistry.state")(function* (ctx) {
@@ -165,7 +166,7 @@ export namespace ToolRegistry {
             read: Tool.init(read),
             glob: Tool.init(GlobTool),
             grep: Tool.init(GrepTool),
-            edit: Tool.init(EditTool),
+            edit: Tool.init(edit),
             write: Tool.init(WriteTool),
             task: Tool.init(task),
             fetch: Tool.init(webfetch),
