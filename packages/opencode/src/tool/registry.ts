@@ -5,6 +5,7 @@ import { BashTool } from "./bash"
 import { EditTool } from "./edit"
 import { GlobTool } from "./glob"
 import { GrepTool } from "./grep"
+import { ListTool } from "./ls"
 import { ReadTool } from "./read"
 import { TaskTool } from "./task"
 import { TodoWriteTool } from "./todo"
@@ -103,6 +104,7 @@ export namespace ToolRegistry {
       const webfetch = yield* WebFetchTool
       const websearch = yield* WebSearchTool
       const codesearch = yield* CodeSearchTool
+      const lstool = yield* ListTool
 
       const state = yield* InstanceState.make<State>(
         Effect.fn("ToolRegistry.state")(function* (ctx) {
@@ -165,6 +167,7 @@ export namespace ToolRegistry {
             read: Tool.init(read),
             glob: Tool.init(GlobTool),
             grep: Tool.init(GrepTool),
+            list: Tool.init(lstool),
             edit: Tool.init(EditTool),
             write: Tool.init(WriteTool),
             task: Tool.init(task),
@@ -188,6 +191,7 @@ export namespace ToolRegistry {
               tool.read,
               tool.glob,
               tool.grep,
+              tool.list,
               tool.edit,
               tool.write,
               tool.task,
