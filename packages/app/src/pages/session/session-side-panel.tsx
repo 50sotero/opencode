@@ -372,16 +372,18 @@ export function SessionSidePanel(props: {
                 >
                   <Tabs.List>
                     <Tabs.Trigger value="changes" class="flex-1" classes={{ button: "w-full" }}>
-                      {reviewCount()}{" "}
-                      {language.t(reviewCount() === 1 ? "session.review.change.one" : "session.review.change.other")}
+                      {props.reviewCount()}{" "}
+                      {language.t(
+                        props.reviewCount() === 1 ? "session.review.change.one" : "session.review.change.other",
+                      )}
                     </Tabs.Trigger>
                     <Tabs.Trigger value="all" class="flex-1" classes={{ button: "w-full" }}>
                       {language.t("session.files.all")}
                     </Tabs.Trigger>
-                    </Tabs.List>
-                    <Tabs.Content value="changes" class="bg-background-stronger px-3 py-0">
-                      <Switch>
-                        <Match when={props.hasReview() || !props.diffsReady()}>
+                  </Tabs.List>
+                  <Tabs.Content value="changes" class="bg-background-stronger px-3 py-0">
+                    <Switch>
+                      <Match when={props.hasReview() || !props.diffsReady()}>
                         <Show
                           when={props.diffsReady()}
                           fallback={
@@ -401,14 +403,14 @@ export function SessionSidePanel(props: {
                             onFileClick={(node) => props.focusReviewDiff(node.path)}
                           />
                         </Show>
-                        </Match>
-                        <Match when={true}>{empty(props.empty())}</Match>
-                      </Switch>
-                    </Tabs.Content>
-                    <Tabs.Content value="all" class="bg-background-stronger px-3 py-0">
-                      <Switch>
-                        <Match when={nofiles()}>{empty(language.t("session.files.empty"))}</Match>
-                        <Match when={true}>
+                      </Match>
+                      <Match when={true}>{empty(props.empty())}</Match>
+                    </Switch>
+                  </Tabs.Content>
+                  <Tabs.Content value="all" class="bg-background-stronger px-3 py-0">
+                    <Switch>
+                      <Match when={nofiles()}>{empty(language.t("session.files.empty"))}</Match>
+                      <Match when={true}>
                         <FileTree
                           path=""
                           class="pt-3"
@@ -416,11 +418,10 @@ export function SessionSidePanel(props: {
                           kinds={kinds()}
                           onFileClick={(node) => openTab(file.tab(node.path))}
                         />
-                        </Match>
-                      </Switch>
-                    </Tabs.Content>
-                  </Tabs>
-                </div>
+                      </Match>
+                    </Switch>
+                  </Tabs.Content>
+                </Tabs>
               </div>
               <Show when={fileOpen()}>
                 <div onPointerDown={() => props.size.start()}>
