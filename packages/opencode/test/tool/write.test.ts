@@ -1,8 +1,10 @@
 import { afterEach, describe, test, expect } from "bun:test"
+import { Effect, Layer, ManagedRuntime } from "effect"
 import path from "path"
 import fs from "fs/promises"
 import { WriteTool } from "../../src/tool/write"
 import { Instance } from "../../src/project/instance"
+import { LSP } from "../../src/lsp"
 import { tmpdir } from "../fixture/fixture"
 import { SessionID, MessageID } from "../../src/session/schema"
 
@@ -21,6 +23,13 @@ afterEach(async () => {
   await Instance.disposeAll()
 })
 
+const runtime = ManagedRuntime.make(LSP.defaultLayer)
+
+async function initWrite() {
+  const info = await runtime.runPromise(WriteTool)
+  return info.init()
+}
+
 describe("tool.write", () => {
   describe("new file creation", () => {
     test("writes content to new file", async () => {
@@ -30,7 +39,7 @@ describe("tool.write", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const write = await WriteTool.init()
+          const write = await initWrite()
           const result = await write.execute(
             {
               filePath: filepath,
@@ -55,7 +64,7 @@ describe("tool.write", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const write = await WriteTool.init()
+          const write = await initWrite()
           await write.execute(
             {
               filePath: filepath,
@@ -76,7 +85,7 @@ describe("tool.write", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const write = await WriteTool.init()
+          const write = await initWrite()
           await write.execute(
             {
               filePath: "relative.txt",
@@ -98,14 +107,13 @@ describe("tool.write", () => {
       const filepath = path.join(tmp.path, "existing.txt")
       await fs.writeFile(filepath, "old content", "utf-8")
 
-      // First read the file to satisfy FileTime requirement
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
           const { FileTime } = await import("../../src/file/time")
           await FileTime.read(ctx.sessionID, filepath)
 
-          const write = await WriteTool.init()
+          const write = await initWrite()
           const result = await write.execute(
             {
               filePath: filepath,
@@ -134,7 +142,7 @@ describe("tool.write", () => {
           const { FileTime } = await import("../../src/file/time")
           await FileTime.read(ctx.sessionID, filepath)
 
-          const write = await WriteTool.init()
+          const write = await initWrite()
           const result = await write.execute(
             {
               filePath: filepath,
@@ -143,7 +151,6 @@ describe("tool.write", () => {
             ctx,
           )
 
-          // Diff should be in metadata
           expect(result.metadata).toHaveProperty("filepath", filepath)
           expect(result.metadata).toHaveProperty("exists", true)
         },
@@ -159,7 +166,7 @@ describe("tool.write", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const write = await WriteTool.init()
+          const write = await initWrite()
           await write.execute(
             {
               filePath: filepath,
@@ -168,7 +175,6 @@ describe("tool.write", () => {
             ctx,
           )
 
-          // On Unix systems, check permissions
           if (process.platform !== "win32") {
             const stats = await fs.stat(filepath)
             expect(stats.mode & 0o777).toBe(0o644)
@@ -187,7 +193,7 @@ describe("tool.write", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const write = await WriteTool.init()
+          const write = await initWrite()
           await write.execute(
             {
               filePath: filepath,
@@ -210,7 +216,7 @@ describe("tool.write", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const write = await WriteTool.init()
+          const write = await initWrite()
           await write.execute(
             {
               filePath: filepath,
@@ -232,7 +238,7 @@ describe("tool.write", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const write = await WriteTool.init()
+          const write = await initWrite()
           await write.execute(
             {
               filePath: filepath,
@@ -258,7 +264,7 @@ describe("tool.write", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const write = await WriteTool.init()
+          const write = await initWrite()
           await write.execute(
             {
               filePath: filepath,
@@ -281,7 +287,7 @@ describe("tool.write", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const write = await WriteTool.init()
+          const write = await initWrite()
           await write.execute(
             {
               filePath: filepath,
@@ -302,7 +308,6 @@ describe("tool.write", () => {
       await using tmp = await tmpdir()
       const readonlyPath = path.join(tmp.path, "readonly.txt")
 
-      // Create a read-only file
       await fs.writeFile(readonlyPath, "test", "utf-8")
       await fs.chmod(readonlyPath, 0o444)
 
@@ -312,7 +317,7 @@ describe("tool.write", () => {
           const { FileTime } = await import("../../src/file/time")
           await FileTime.read(ctx.sessionID, readonlyPath)
 
-          const write = await WriteTool.init()
+          const write = await initWrite()
           await expect(
             write.execute(
               {
@@ -336,7 +341,7 @@ describe("tool.write", () => {
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
-          const write = await WriteTool.init()
+          const write = await initWrite()
           const result = await write.execute(
             {
               filePath: filepath,
